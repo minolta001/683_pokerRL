@@ -1,6 +1,7 @@
 import numpy as np
 
 from rlcard.games.base import Card
+import torch
 
 def set_seed(seed):
     if seed is not None:
@@ -18,7 +19,6 @@ def set_seed(seed):
         random.seed(seed)
 
 def get_device():
-    import torch
     if torch.backends.mps.is_available():
         device = torch.device("mps:0")
         print("--> Running on the GPU")

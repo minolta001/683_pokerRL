@@ -55,11 +55,11 @@ def evaluate(args):
         print(position, args.models[position], reward)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Evaluation example in RLCard")
+    parser = argparse.ArgumentParser("Evaluation DQN_random VS DQN_DQN limit holdem")
     parser.add_argument(
         '--env',
         type=str,
-        default='leduc-holdem',
+        default='limit-holdem',
         choices=[
             'blackjack',
             'leduc-holdem',
@@ -75,8 +75,10 @@ if __name__ == '__main__':
         '--models',
         nargs='*',
         default=[
-            'experiments/leduc_holdem_dqn_result/model.pth',
-            'random',
+            #'experiments/limit_holdem_dqn_vs_dqn_ver0/model.pth',
+            'experiments/limit_holdem_dqn_vs_random__ver0/model.pth',
+            #'random'
+            'experiments/limit_holdem_nfsp_vs_random_ver0/model.pth'
         ],
     )
     parser.add_argument(
