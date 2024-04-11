@@ -22,7 +22,7 @@ from rlcard.utils import (
     plot_curve,
 )
 
-def train(args):
+def train(args, random_prob_list, curriculum): 
 
     # Check whether gpu is available
     device = get_device()
@@ -46,11 +46,13 @@ def train(args):
             agent = DQNAgent(
                 num_actions=env.num_actions,
                 state_shape=env.state_shape[0],
-                mlp_layers=[64,64],
+                mlp_layers=[128, 256, 128,64],
                 device=device,
                 save_path=args.log_dir,
                 save_every=args.save_every
             )
+        
+    '''
     elif args.algorithm == 'nfsp':
         from rlcard.agents import NFSPAgent
         agent = NFSPAgent(
@@ -62,60 +64,73 @@ def train(args):
             save_path=args.log_dir,
             save_every=args.save_every
         )
+    '''
 
     agents = [agent]
+ 
 
-    for _ in range(1, env.num_players):
-        #agents.append(RandomAgent(num_actions=env.num_actions))
+    for random_prob in random_prob_list:
 
-        #agents.append(LimitholdemRuleAgentV1())
+        for _ in range(1, env.num_players):
 
-        #Load a pre-trained DQN-random model
-        pre_trained_model_path = 'experiments/limit_holdem_dqn_vs_random__ver0/checkpoint_dqn.pt'
-        agents.append(DQNAgent.from_checkpoint(checkpoint=torch.load(pre_trained_model_path))) 
+            if(curriculum == False):
+                agents.append(RandomAgent(num_actions=env.num_actions))
+
+            else:
+                agents.append(LimitholdemRuleAgentV1(random_prob=random_prob))
+
+            #Load a pre-trained DQN-random model
+            #pre_trained_model_path = 'experiments/limit_holdem_dqn_vs_random__ver0/checkpoint_dqn.pt'
+            #agents.append(DQNAgent.from_checkpoint(checkpoint=torch.load(pre_trained_model_path))) 
 
 
-    env.set_agents(agents)
+        env.set_agents(agents)
 
-    # Start training
-    with Logger(args.log_dir) as logger:
-        for episode in range(args.num_episodes):
+        # Start training
+        with Logger(args.log_dir) as logger:
+            for episode in range(args.num_episodes):
 
-            if args.algorithm == 'nfsp':
-                agents[0].sample_episode_policy()
+                if args.algorithm == 'nfsp':
+                    agents[0].sample_episode_policy()
 
-            # Generate data from the environment
-            trajectories, payoffs = env.run(is_training=True)
+                # Generate data from the environment
+                trajectories, payoffs = env.run(is_training=True)
 
-            # Reorganaize the data to be state, action, reward, next_state, done
-            trajectories = reorganize(trajectories, payoffs)
+                # Reorganaize the data to be state, action, reward, next_state, done
+                trajectories = reorganize(trajectories, payoffs)
 
-            # Feed transitions into agent memory, and train the agent
-            # Here, we assume that DQN always plays the first position
-            # and the other players play randomly (if any)
-            for ts in trajectories[0]:
-                agent.feed(ts)
+                # Feed transitions into agent memory, and train the agent
+                # Here, we assume that DQN always plays the first position
+                # and the other players play randomly (if any)
+                for ts in trajectories[0]:
+                    agent.feed(ts)
 
-            # Evaluate the performance. Play with random agents.
-            if episode % args.evaluate_every == 0:
-                logger.log_performance(
-                    episode,
-                    tournament(
-                        env,
-                        args.num_eval_games,
-                    )[0]
-                )
+                # Evaluate the performance. Play with random agents.
+                if episode % args.evaluate_every == 0:
+                    logger.log_performance(
+                        episode,
+                        tournament(
+                            env,
+                            args.num_eval_games,
+                        )[0]
+                    )
 
-        # Get the paths
-        csv_path, fig_path = logger.csv_path, logger.fig_path
+            # Get the paths
+            csv_path = logger.csv_path
+            fig_path = os.path.join(logger.log_dir, f'fig_rand_prob_{random_prob}.png')
 
-    # Plot the learning curve
-    plot_curve(csv_path, fig_path, args.algorithm)
+        # Plot the learning curve
+        plot_curve(csv_path, fig_path, args.algorithm)
+        
+        os.rename(csv_path, os.path.join(logger.log_dir, f'performance_rand_prob_{random_prob}.csv'))
 
-    # Save model
-    save_path = os.path.join(args.log_dir, 'model.pth')
-    torch.save(agent, save_path)
-    print('Model saved in', save_path)
+        # Save model
+        save_path = os.path.join(args.log_dir, f'model_random_p{random_prob}.pth')
+        torch.save(agent, save_path)
+        print(f'DQN Model against rule-based with random prob {random_prob} saved in', save_path)
+
+        # remove the used rule-based model
+        agents.pop()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("DQN RL for limited holdem")
@@ -157,7 +172,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--num_episodes',
         type=int,
-        default=10000,
+        default=5000,
     )
     parser.add_argument(
         '--num_eval_games',
@@ -189,5 +204,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda
-    train(args)
+
+    rand_prob_list = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+    
+    train(args, random_prob_list=[1.0], curriculum=False)
 

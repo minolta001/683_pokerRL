@@ -55,7 +55,7 @@ def evaluate(args):
         print(position, args.models[position], reward)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Evaluation DQN_random VS DQN_DQN limit holdem")
+    parser = argparse.ArgumentParser("Evaluation DQN_curriculum VS random limit holdem")
     parser.add_argument(
         '--env',
         type=str,
@@ -75,10 +75,10 @@ if __name__ == '__main__':
         '--models',
         nargs='*',
         default=[
-            #'experiments/limit_holdem_dqn_vs_dqn_ver0/model.pth',
-            'experiments/limit_holdem_dqn_vs_random__ver0/model.pth',
-            #'random'
-            'experiments/limit_holdem_nfsp_vs_random_ver0/model.pth'
+            #'experiments/limit_holdem_dqn_curriculum_v0/model_random_p0.0.pth',
+            'experiments/limit_holdem_dqn_random/model_random_p1.0.pth',
+            #'limit-holdem-rule-v1',
+            'random'
         ],
     )
     parser.add_argument(

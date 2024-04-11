@@ -2,16 +2,18 @@
 '''
 import rlcard
 from rlcard.models.model import Model
+import numpy as np
 
 class LimitholdemRuleAgentV1(object):
     ''' Limit Hold 'em Rule agent version 1
     '''
 
-    def __init__(self):
+    def __init__(self, random_prob=0):
         self.use_raw = True
+        self.random_prob = random_prob
 
-    @staticmethod
-    def step(state):
+    #@staticmethod
+    def step(self, state):
         ''' Predict the action when given raw state. A simple rule-based AI.
         Args:
             state (dict): Raw state from the game
@@ -92,18 +94,24 @@ class LimitholdemRuleAgentV1(object):
             else:
                 action = 'call'
 
-        #return action
-        if action in legal_actions:
-            return action
-        else:
-            if action == 'raise':
-                return 'call'
-            if action == 'check':
-                return 'fold'
-            if action == 'call':
-                return 'raise'
-            else:
+        #return action with a randomized probability
+
+        # if True, then follow the rule based model
+        if(np.random.choice([True, False], p=[1 - self.random_prob, self.random_prob])):
+            if action in legal_actions:
                 return action
+            else:
+                if action == 'raise':
+                    return 'call'
+                if action == 'check':
+                    return 'fold'
+                if action == 'call':
+                    return 'raise'
+                else:
+                    return action
+        else: # random action 
+            return np.random.choice(legal_actions)
+            
 
     def eval_step(self, state):
         ''' Step for evaluation. The same to step
