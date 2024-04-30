@@ -207,6 +207,8 @@ def tournament(env, num):
     Returns:
         A list of avrage payoffs for each player
     '''
+
+
     payoffs = [0 for _ in range(env.num_players)]
     counter = 0
     while counter < num:

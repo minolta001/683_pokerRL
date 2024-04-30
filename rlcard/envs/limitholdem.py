@@ -52,7 +52,6 @@ class LimitholdemEnv(Env):
 
         legal_actions = OrderedDict({self.actions.index(a): None for a in state['legal_actions']})
         extracted_state['legal_actions'] = legal_actions
-
         public_cards = state['public_cards']
         hand = state['hand']
         raise_nums = state['raise_nums']
@@ -62,6 +61,10 @@ class LimitholdemEnv(Env):
         obs[idx] = 1
         for i, num in enumerate(raise_nums):
             obs[52 + i * 5 + num] = 1
+        
+
+
+
         extracted_state['obs'] = obs
 
         extracted_state['raw_obs'] = state
