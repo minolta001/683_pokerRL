@@ -16,6 +16,8 @@ idx_to_act = {0:'call',
               3:'check'
 }
 
+
+# Convert card to the card index
 def card_to_index(card):
     # Define the suits and their order
     suits = {'S': 0, 'H': 1, 'D': 2, 'C': 3}
@@ -89,7 +91,9 @@ def build_state(valid_actions, hole_card, round_state):
     return ex_state
 
 
+# Load pretrain DQN poker agent
 def load_model():
+    # NOTE: Please put the directory of models and the agent file under the same directory.
     model_path = 'limit_holdem_dqn_curriculum_v0/model_random_p0.0.pth'
     agent = None
     device = torch.device("cuda:0")
@@ -107,10 +111,13 @@ class CurriculumDQNPlayer(BasePokerPlayer):
 
     def declare_action(self, valid_actions, hole_card, round_state):
 
+        # build observation to the state
         state = build_state(valid_actions, hole_card, round_state) 
 
+        # state is fed into our model. The model output the action index
         act_idx, _ = self.dqn_agent.eval_step(state)
 
+        # action idx is converted to action
         return idx_to_act[act_idx] # action returned here is sent to the poker engine
 
     def receive_game_start_message(self, game_info):
