@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 """ =========== *Remember to import your agent!!! =========== """
 from randomplayer import RandomPlayer
-from curriculum_dqn_player import CurriculumDQNPlayer
+from Group1Player import Group1Player
 # from smartwarrior import SmartWarrior
 """ ========================================================= """
 
@@ -36,7 +36,7 @@ def testperf(agent_name1, agent1, agent_name2, agent2):
 	# Register players
 	config.register_player(name=agent_name1, algorithm=RandomPlayer())
 	#config.register_player(name=agent_name2, algorithm=RandomPlayer())
-	config.register_player(name=agent_name2, algorithm=CurriculumDQNPlayer())
+	config.register_player(name=agent_name2, algorithm=Group1Player())
 	#config.register_player(name=agent_name1, algorithm=agent1())
 	#config.register_player(name=agent_name2, algorithm=agent2())
 	
